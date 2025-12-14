@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+
+<nav class="glass-nav">
+
+    <div class="logo">FitTracker <span class="pro-badge">PRO</span></div>
+
+    <div class="user-info">
+
+        <form method="POST" action="{{ url_for('reset_today_data') }}" style="display: inline-block; margin-right: 15px;" onsubmit="return confirm('Are you sure you want to reset ALL meals and workouts logged today? This action cannot be undone.');">
+
+            <button type="submit" class="btn-reset" title="Reset Today's Data"><i class="fas fa-undo-alt"></i> Reset Today</button>
+
+        </form>
+
+
+
+        <span>Welcome, {{ user.username }}</span>
+
+        <a href="{{ url_for('logout') }}" class="btn-logout"><i class="fas fa-sign-out-alt"></i></a>
+
+    </div>
+
+</nav>
+
+
+
+<div class="main-layout">
+
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            {% for category, message in messages %}
+
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+
+
+    <div class="card ai-card">
+
+        <div class="card-header"><i class="fas fa-microchip"></i> AI Coach Insight</div>
+
+        <p class="ai-text">"{{ ai_tip }}"</p>
+
+    </div>
+
+
+
+    <h2 class="section-title">Today's Overview</h2>
+
+    <div class="grid-3 stats-row">
+
+       
+
+        <div class="card stat-card weight-display">
+
+            <div class="icon-box"><i class="fas fa-weight"></i></div>
+
+            <div class="stat-info">
+
+                <h3>Current Weight</h3>
+
+                <p class="big-number">{{ current_weight }} <span>kg</span></p>
+
+            </div>
+
+           
+
+            <div style="width: 100%; height: 80px; margin-top: 10px;">
+
+                <canvas id="weightChart"
+
+                    data-weights="{{ weight_data | tojson }}"
+
+                    data-dates="{{ weight_dates | tojson }}"
+
+                ></canvas>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="card stat-card nutrition-display">
+
+            <div class="icon-box"><i class="fas fa-apple-alt"></i></div>
+
+            <div class="stat-info">
+
+                <h3>Calories In</h3>
+
+                <p class="big-number">{{ today_calories }} <span>kcal</span></p>
+
+                <div class="macros-mini">
+
+                    <span>P: {{ today_protein }}g</span>
+
+                    <span>C: {{ today_carbs }}g</span>
+
+                    <span>F: {{ today_fats }}g</span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="card stat-card workout-display">
+
+            <div class="icon-box"><i class="fas fa-dumbbell"></i></div>
+
+            <div class="stat-info">
+
+                <h3>Workouts Done</h3>
+
+                <p class="big-number">{{ todays_workouts|length }}</p>
+
+                <small style="color: var(--text-muted);">Total Sessions Today</small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <h2 class="section-title">Quick Log</h2>
+
+    <div class="grid-3 forms-row">
+
+       
+
+        <div class="card form-card">
+
+            <h3><i class="fas fa-plus-circle"></i> Log Weight</h3>
+
+            <form method="POST">
+
+                <input type="hidden" name="type" value="weight">
+
+                <input type="number" step="0.1" name="weight" placeholder="New Weight (kg)" required>
+
+                <button type="submit" class="glow-btn">Update Weight</button>
+
+            </form>
+
+        </div>
+
+
+
+        <div class="card form-card">
+
+            <h3><i class="fas fa-utensils"></i> Log Meal</h3>
+
+            <form method="POST">
+
+                <input type="hidden" name="type" value="meal">
+
+                <input type="text" name="meal_name" placeholder="Meal Name" required>
+
+                <div class="mini-grid">
+
+                    <input type="number" name="calories" placeholder="Kcal" required>
+
+                    <input type="number" name="protein" placeholder="Prot (g)" required>
+
+                </div>
+
+                <div class="mini-grid">
+
+                    <input type="number" name="carbs" placeholder="Carb (g)" required>
+
+                    <input type="number" name="fats" placeholder="Fat (g)" required>
+
+                </div>
+
+                <button type="submit" class="glow-btn">Add Meal</button>
+
+            </form>
+
+        </div>
+
+
+
+        <div class="card form-card">
+
+            <h3><i class="fas fa-running"></i> Log Workout</h3>
+
+            <form method="POST">
+
+                <input type="hidden" name="type" value="workout">
+
+                <input type="text" name="exercise" placeholder="Exercise Name" required>
+
+                <div class="mini-grid">
+
+                    <input type="number" name="sets" placeholder="Sets" required>
+
+                    <input type="number" name="reps" placeholder="Reps" required>
+
+                </div>
+
+                <input type="number" name="time" placeholder="Duration (min)" required>
+
+                <button type="submit" class="glow-btn">Add Workout</button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="grid-2 details-row">
+
+       
+
+        <div class="card list-card">
+
+            <h3>Today's Food Intake</h3>
+
+            <div class="scroll-area">
+
+                {% if todays_meals %}
+
+                    {% for meal in todays_meals %}
+
+                    <div class="list-item">
+
+                        <div class="item-name">{{ meal.name }}</div>
+
+                        <div class="item-meta">
+
+                            {{ meal.calories }} kcal
+
+                            <span class="log-time"> ({{ meal.date.strftime('%d/%m %H:%M') }})</span>
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <p class="empty-state">No meals tracked today.</p>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+
+        <div class="card list-card">
+
+            <h3>Today's Training</h3>
+
+            <div class="scroll-area">
+
+                {% if todays_workouts %}
+
+                    {% for w in todays_workouts %}
+
+                    <div class="list-item">
+
+                        <div class="item-name">{{ w.exercise_name }}</div>
+
+                        <div class="item-meta">
+
+                            {{ w.sets }} sets x {{ w.reps }} reps
+
+                            <span class="log-time"> ({{ w.date.strftime('%d/%m %H:%M') }})</span>
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <p class="empty-state">Rest day? No workouts logged.</p>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="contact-section">
+
+        <div class="card contact-card">
+
+            <h3>Support & Feedback</h3>
+
+            <p>Need help with your plan? Contact our team.</p>
+
+           
+
+            <a href="mailto:oussgana@gmail.com" class="contact-btn"><i class="fas fa-envelope"></i> Contact Us</a>
+
+           
+
+            <p style="font-size: 0.8rem; margin-top: 10px; color: var(--text-muted);">
+
+                or email us directly at:
+
+                <span style="color: var(--primary); font-weight: bold;">oussgana@gmail.com</span>
+
+            </p>
+
+        </div>
+
+    </div>
+
+    </div>
+
+
+
+{% endblock %} 

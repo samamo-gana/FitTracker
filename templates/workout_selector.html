@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+
+<nav class="glass-nav">
+    <div class="logo">FitTracker <span class="pro-badge">PRO</span></div>
+    <div class="user-info">
+        <a href="{{ url_for('dashboard') }}" class="btn-logout"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+</nav>
+
+<div class="main-layout">
+    <h2 class="section-title">🏋️ Detailed Workout Log</h2>
+    <div class="card ai-card">
+        <div class="card-header"><i class="fas fa-search"></i> Select Exercises for Today</div>
+        <p class="ai-text">
+            Choose the exercises you performed today. You will enter the Sets and Reps for each chosen exercise.
+        </p>
+    </div>
+
+    <div class="filter-bar">
+        <button class="filter-btn active">All</button>
+        <button class="filter-btn">Chest</button>
+        <button class="filter-btn">Back</button>
+        <button class="filter-btn">Legs</button>
+        <button class="filter-btn">Arms</button>
+        <button class="filter-btn">Shoulders</button>
+    </div>
+
+    <form method="POST" action="{{ url_for('log_workout_detail') }}" id="detailedWorkoutForm">
+        <input type="hidden" name="type" value="detailed_workout_log">
+        
+        <div class="exercise-grid">
+            
+            <div class="exercise-card" data-muscle="Chest">
+                <div class="exercise-img-container">
+                    <img src="https://via.placeholder.com/150x150/000000/FFFFFF?text=Bench+Press" alt="Bench Press" class="exercise-img">
+                    <div class="muscle-hit-overlay">CHEST</div>
+                </div>
+                <h4>Bench Press</h4>
+                <div class="log-inputs">
+                    <input type="number" name="sets_Bench Press" placeholder="Sets" required min="1">
+                    <input type="number" name="reps_Bench Press" placeholder="Reps" required min="1">
+                </div>
+                <button type="button" class="select-btn" onclick="toggleSelection(this, 'Bench Press')">Select</button>
+            </div>
+
+            <div class="exercise-card" data-muscle="Back">
+                <div class="exercise-img-container">
+                    <img src="https://via.placeholder.com/150x150/000000/FFFFFF?text=Deadlift" alt="Deadlift" class="exercise-img">
+                    <div class="muscle-hit-overlay">BACK / LEGS</div>
+                </div>
+                <h4>Deadlift</h4>
+                <div class="log-inputs">
+                    <input type="number" name="sets_Deadlift" placeholder="Sets" required min="1">
+                    <input type="number" name="reps_Deadlift" placeholder="Reps" required min="1">
+                </div>
+                <button type="button" class="select-btn" onclick="toggleSelection(this, 'Deadlift')">Select</button>
+            </div>
+
+            </div>
+        
+        <div class="submit-container">
+            <button type="submit" class="glow-btn huge-btn" disabled id="logWorkoutSubmit">
+                Log Selected Exercises (0)
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    let selectedExercises = {};
+
+    function toggleSelection(button, exerciseName) {
+        const card = button.closest('.exercise-card');
+        const isSelected = card.classList.toggle('selected');
+        
+        if (isSelected) {
+            selectedExercises[exerciseName] = true;
+            card.querySelector('.log-inputs').style.display = 'flex';
+            button.textContent = 'Selected';
+        } else {
+            delete selectedExercises[exerciseName];
+            card.querySelector('.log-inputs').style.display = 'none';
+            button.textContent = 'Select';
+            // Reset input values on deselect
+            card.querySelector('input[name^="sets_"]').value = '';
+            card.querySelector('input[name^="reps_"]').value = '';
+        }
+        
+        updateSubmitButton();
+    }
+
+    function updateSubmitButton() {
+        const count = Object.keys(selectedExercises).length;
+        const submitButton = document.getElementById('logWorkoutSubmit');
+        
+        submitButton.textContent = `Log Selected Exercises (${count})`;
+        submitButton.disabled = count === 0;
+    }
+</script>
+
+{% endblock %}

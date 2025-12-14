@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-wrapper">
+    <form method="POST" class="glass-form auth-form">
+        <h2>Join the Elite</h2>
+        <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 15px;">Start your transformation today.</p>
+        
+        <div class="input-group">
+            <i class="fas fa-user input-icon"></i>
+            <input type="text" name="username" placeholder="Choose Username" required autocomplete="off">
+        </div>
+
+        <div class="input-group">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" name="password" placeholder="Create Password" required>
+        </div>
+
+        <button type="submit">Create Account <i class="fas fa-arrow-right"></i></button>
+        
+        <p class="auth-footer">
+            Already a member? <a href="{{ url_for('login') }}">Login here</a>
+        </p>
+    </form>
+</div>
+{% endblock %}
